@@ -57,6 +57,8 @@ class fm_model {
 		fm_model();
 		void debug();
 		void init();
+        void serialize( std::string& file );
+
 		double predict(sparse_row<FM_FLOAT>& x);
 		double predict(sparse_row<FM_FLOAT>& x, DVector<double> &sum, DVector<double> &sum_sqr);
 	
@@ -74,6 +76,33 @@ fm_model::fm_model() {
 	k0 = true;
 	k1 = true;
 }
+
+
+void fm_model::serialize( std::string& file ) {
+    std::cerr << "writing model to " << file.c_str() << std::endl;
+    std::ofstream fout;
+    fout.open( file.c_str(), std::ios::trunc );
+
+    fout << "w0: " << w0 << std::endl;
+    fout << "w: " << std::endl;
+    for( int i = 0; i < w.dim; i++ ) {
+        fout << w.value[i] << " ";
+    }
+    fout << std::endl;
+    fout << "v: " << std::endl;
+
+    for( int i = 0; i < v.dim1; i++ )
+    {
+        for( int j = 0; j < v.dim2; j++ ) 
+        {
+            fout << v.value[i][j] << " ";
+        }
+        fout << std::endl;
+    }
+
+    fout.close();
+}
+
 
 void fm_model::debug() {
 	std::cout << "num_attributes=" << num_attribute << std::endl;

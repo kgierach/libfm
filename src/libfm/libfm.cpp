@@ -402,7 +402,10 @@ int main(int argc, char **argv) {
 			DVector<double> pred;
 			pred.setSize(test.num_cases);
 			fml->predict(test, pred);
-			pred.save(cmdline.getValue(param_out));	
+			pred.save(cmdline.getValue(param_out));
+
+            std::string model_out = "model.out";
+            fml->fm->serialize( model_out );
 		}
 				 	
 
