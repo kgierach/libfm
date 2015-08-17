@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
 		const std::string param_test_file	= cmdline.registerParameter("test", "filename for test data [MANDATORY]");
 		const std::string param_val_file	= cmdline.registerParameter("validation", "filename for validation data (only for SGDA)");
 		const std::string param_out		= cmdline.registerParameter("out", "filename for output");
+		const std::string param_modelout		= cmdline.registerParameter("modelout", "filename for output");
 
 		const std::string param_dim		= cmdline.registerParameter("dim", "'k0,k1,k2': k0=use bias, k1=use 1-way interactions, k2=dim of 2-way interactions; default=1,1,8");
 		const std::string param_regular		= cmdline.registerParameter("regular", "'r0,r1,r2' for SGD and ALS: r0=bias regularization, r1=1-way regularization, r2=2-way regularization");
@@ -403,8 +404,11 @@ int main(int argc, char **argv) {
 			pred.setSize(test.num_cases);
 			fml->predict(test, pred);
 			pred.save(cmdline.getValue(param_out));
+		}
 
-            std::string model_out = "model.out";
+		// () Save weights
+		if (cmdline.hasParameter(param_modelout)) {
+            std::string model_out = cmdline.getValue(param_modelout);
             fml->fm->serialize( model_out );
 		}
 				 	
