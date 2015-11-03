@@ -31,6 +31,10 @@
 #include "fm_learn_sgd.h"
 
 class fm_learn_sgd_element: public fm_learn_sgd {
+        public:
+            double rmse_delta = 0.0;
+            int    num_consecutive_iterations = 0;
+            
 	public:
 		virtual void init() {
 			fm_learn_sgd::init();
@@ -42,7 +46,14 @@ class fm_learn_sgd_element: public fm_learn_sgd {
 		virtual void learn(Data& train, Data& test) {
 			fm_learn_sgd::learn(train, test);
 
+                        double rmse_train_last = 0.0;
+                        int    consecutive_convergence_observed = 0;
+                        
 			std::cout << "SGD: DON'T FORGET TO SHUFFLE THE ROWS IN TRAINING DATA TO GET THE BEST RESULTS." << std::endl; 
+                        if( rmse_delta != 0.0  ) {
+                            std::cout << "SGD: using conversion threshold delta: " << rmse_delta << std::endl;
+                        }
+                        
 			// SGD
 			for (int i = 0; i < num_iter; i++) {
 			
@@ -63,12 +74,32 @@ class fm_learn_sgd_element: public fm_learn_sgd {
 				iteration_time = (getusertime() - iteration_time);
 				double rmse_train = evaluate(train);
 				double rmse_test = evaluate(test);
+                                
+                                if(    rmse_delta != 0.0
+                                    && rmse_train_last != 0.0
+                                    && fabs( rmse_train_last - rmse_train ) <= rmse_delta ) {
+                                    std::cout << "convergence threshold observed, delta=" 
+                                              << fabs( rmse_train_last - rmse_train ) 
+                                              << std::endl;
+                                    consecutive_convergence_observed += 1;
+                                } else {
+                                    consecutive_convergence_observed = 0;
+                                }
+                                
+                                rmse_train_last = rmse_train;
+                                
 				std::cout << "#Iter=" << std::setw(3) << i << "\tTrain=" << rmse_train << "\tTest=" << rmse_test << std::endl;
 				if (log != NULL) {
 					log->log("rmse_train", rmse_train);
 					log->log("time_learn", iteration_time);
 					log->newLine();
 				}
+                                
+                                if(    num_consecutive_iterations > 0 
+                                    && consecutive_convergence_observed >= num_consecutive_iterations ) {
+                                    std::cout << "Breaking training loop due to convergence" << std::endl;
+                                    break;
+                                }
 			}		
 		}
 		

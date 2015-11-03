@@ -86,6 +86,8 @@ int main(int argc, char **argv) {
 		const std::string param_init_stdev	= cmdline.registerParameter("init_stdev", "stdev for initialization of 2-way factors; default=0.1");
 		const std::string param_num_iter	= cmdline.registerParameter("iter", "number of iterations; default=100");
 		const std::string param_learn_rate	= cmdline.registerParameter("learn_rate", "learn_rate for SGD; default=0.1");
+		const std::string conv_delta            = cmdline.registerParameter("conv_delta", "convergence delta threshold; default=0.0001");
+		const std::string cons_conv_inst        = cmdline.registerParameter("num_conv_iters", "num consecutive iterations needed below convergence delta; default=1");
 
 		const std::string param_method		= cmdline.registerParameter("method", "learning method (SGD, SGDA, ALS, MCMC); default=MCMC");
 
@@ -250,7 +252,11 @@ int main(int argc, char **argv) {
 		if (! cmdline.getValue(param_method).compare("sgd")) {
 	 		fml = new fm_learn_sgd_element();
 			((fm_learn_sgd*)fml)->num_iter = cmdline.getValue(param_num_iter, 100);
-
+                        if( cmdline.hasParameter( conv_delta ) ) {
+                            cerr << "using conv_delta: " << conv_delta << endl;
+                            ((fm_learn_sgd_element*)fml)->rmse_delta = cmdline.getValue( conv_delta, 0.0001 );
+                            ((fm_learn_sgd_element*)fml)->num_consecutive_iterations = cmdline.getValue( cons_conv_inst, 1 );                
+                        }
 		} else if (! cmdline.getValue(param_method).compare("sgda")) {
 			assert(validation != NULL);		
 	 		fml = new fm_learn_sgd_element_adapt_reg();
